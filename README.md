@@ -28,7 +28,7 @@ CloudWatch · SNS · AWS Backup · S3 remote state.
 ## Repository layout
 
 ```
-platform-infra-iac/
+platform-iac-aws/
 ├── bootstrap/        # S3 bucket for Terraform remote state (run once)
 ├── modules/          # reusable building blocks
 │   ├── networking/   # VPC, subnets, IGW, NAT, route tables
