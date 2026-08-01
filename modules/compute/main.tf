@@ -1,5 +1,6 @@
 locals {
-  tags = merge(var.tags, { ManagedBy = "terraform" })
+  tags          = merge(var.tags, { ManagedBy = "terraform" })
+  https_enabled = var.certificate_arn != ""
 
   # Default bootstrap: a tiny web server on the app port so ALB health checks
   # pass out of the box. Replace by passing var.user_data with the real app.
@@ -23,10 +24,11 @@ data "aws_ssm_parameter" "al2023" {
 # Application Load Balancer
 # ---------------------------------------------------------------------------
 resource "aws_lb" "this" {
-  name               = "${var.name_prefix}-alb"
-  load_balancer_type = "application"
-  subnets            = var.public_subnet_ids
-  security_groups    = [var.alb_sg_id]
+  name                       = "${var.name_prefix}-alb"
+  load_balancer_type         = "application"
+  subnets                    = var.public_subnet_ids
+  security_groups            = [var.alb_sg_id]
+  drop_invalid_header_fields = true
 
   tags = merge(local.tags, { Name = "${var.name_prefix}-alb" })
 }
@@ -49,10 +51,35 @@ resource "aws_lb_target_group" "this" {
   tags = local.tags
 }
 
+# Port 80: redirect to HTTPS when a cert is set, otherwise serve the app directly.
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
+
+  default_action {
+    type             = local.https_enabled ? "redirect" : "forward"
+    target_group_arn = local.https_enabled ? null : aws_lb_target_group.this.arn
+
+    dynamic "redirect" {
+      for_each = local.https_enabled ? [1] : []
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+  }
+}
+
+# Port 443: only created when an ACM certificate is provided.
+resource "aws_lb_listener" "https" {
+  count             = local.https_enabled ? 1 : 0
+  load_balancer_arn = aws_lb.this.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"

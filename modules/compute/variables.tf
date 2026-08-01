@@ -69,6 +69,12 @@ variable "health_check_path" {
   default     = "/"
 }
 
+variable "certificate_arn" {
+  description = "ACM certificate ARN. If set, the ALB serves HTTPS and redirects HTTP to it. If empty, plain HTTP only."
+  type        = string
+  default     = ""
+}
+
 variable "user_data" {
   description = "Optional user-data script. If empty, a minimal placeholder web server is started so health checks pass."
   type        = string
