@@ -1,10 +1,12 @@
 # Terraform
 .terraform/
-.terraform.lock.hcl
 *.tfstate
 *.tfstate.*
 crash.log
 crash.*.log
+
+# NOTE: .terraform.lock.hcl is intentionally committed (do NOT ignore it) so
+# provider versions are pinned and reproducible across the team and CI.
 
 # Variable files that may contain secrets
 *.tfvars
