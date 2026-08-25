@@ -34,20 +34,3 @@ module "compute" {
   app_sg_id             = module.security.app_sg_id
   instance_profile_name = module.security.instance_profile_name
 }
-
-# 5. Monitoring: SNS + CloudWatch alarms.
-module "monitoring" {
-  source                  = "../../modules/monitoring"
-  name_prefix             = local.name_prefix
-  asg_name                = module.compute.asg_name
-  alb_arn_suffix          = module.compute.alb_arn_suffix
-  target_group_arn_suffix = module.compute.target_group_arn_suffix
-  alarm_email             = var.alarm_email
-}
-
-# 6. Backup: daily AWS Backup of the database.
-module "backup" {
-  source        = "../../modules/backup"
-  name_prefix   = local.name_prefix
-  resource_arns = [module.database.cluster_arn]
-}

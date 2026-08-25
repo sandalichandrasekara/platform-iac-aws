@@ -20,100 +20,6 @@ data "aws_ssm_parameter" "al2023" {
   name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
 
-data "aws_caller_identity" "current" {}
-
-# Regional AWS account that ELB uses to deliver access logs to S3.
-data "aws_elb_service_account" "main" {}
-
-# ---------------------------------------------------------------------------
-# S3 bucket for ALB access logs (audit + request-level visibility)
-# ---------------------------------------------------------------------------
-resource "aws_s3_bucket" "logs" {
-  count         = var.enable_access_logs ? 1 : 0
-  bucket        = "${var.name_prefix}-alb-logs-${data.aws_caller_identity.current.account_id}"
-  force_destroy = true # log bucket: allow teardown of non-critical data with the env
-
-  tags = merge(local.tags, { Name = "${var.name_prefix}-alb-logs" })
-}
-
-resource "aws_s3_bucket_public_access_block" "logs" {
-  count                   = var.enable_access_logs ? 1 : 0
-  bucket                  = aws_s3_bucket.logs[0].id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
-  count  = var.enable_access_logs ? 1 : 0
-  bucket = aws_s3_bucket.logs[0].id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-# Expire old logs so the bucket does not grow without bound.
-resource "aws_s3_bucket_lifecycle_configuration" "logs" {
-  count  = var.enable_access_logs ? 1 : 0
-  bucket = aws_s3_bucket.logs[0].id
-
-  rule {
-    id     = "expire-logs"
-    status = "Enabled"
-
-    filter {}
-
-    expiration {
-      days = var.access_logs_retention_days
-    }
-  }
-}
-
-# Allow the ELB log-delivery principal to write, and deny non-TLS access.
-data "aws_iam_policy_document" "logs" {
-  count = var.enable_access_logs ? 1 : 0
-
-  statement {
-    sid       = "AllowELBAccessLogs"
-    effect    = "Allow"
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.logs[0].arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [data.aws_elb_service_account.main.arn]
-    }
-  }
-
-  statement {
-    sid       = "DenyInsecureTransport"
-    effect    = "Deny"
-    actions   = ["s3:*"]
-    resources = [aws_s3_bucket.logs[0].arn, "${aws_s3_bucket.logs[0].arn}/*"]
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "logs" {
-  count  = var.enable_access_logs ? 1 : 0
-  bucket = aws_s3_bucket.logs[0].id
-  policy = data.aws_iam_policy_document.logs[0].json
-}
-
 # ---------------------------------------------------------------------------
 # Application Load Balancer
 # ---------------------------------------------------------------------------
@@ -124,19 +30,7 @@ resource "aws_lb" "this" {
   security_groups            = [var.alb_sg_id]
   drop_invalid_header_fields = true
 
-  dynamic "access_logs" {
-    for_each = var.enable_access_logs ? [1] : []
-    content {
-      bucket  = aws_s3_bucket.logs[0].id
-      prefix  = ""
-      enabled = true
-    }
-  }
-
   tags = merge(local.tags, { Name = "${var.name_prefix}-alb" })
-
-  # Ensure the bucket policy exists before the ALB tries to write logs.
-  depends_on = [aws_s3_bucket_policy.logs]
 }
 
 resource "aws_lb_target_group" "this" {

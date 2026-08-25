@@ -17,8 +17,3 @@ output "secret_arn" {
   description = "ARN of the Secrets Manager secret holding DB credentials."
   value       = aws_secretsmanager_secret.db.arn
 }
-
-output "cluster_arn" {
-  description = "ARN of the DocumentDB cluster (for AWS Backup)."
-  value       = aws_docdb_cluster.this.arn
-}

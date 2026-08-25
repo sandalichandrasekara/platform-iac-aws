@@ -12,8 +12,3 @@ output "db_secret_arn" {
   description = "Secrets Manager ARN holding DB credentials."
   value       = module.database.secret_arn
 }
-
-output "alerts_topic_arn" {
-  description = "SNS topic that receives CloudWatch alarms."
-  value       = module.monitoring.sns_topic_arn
-}
