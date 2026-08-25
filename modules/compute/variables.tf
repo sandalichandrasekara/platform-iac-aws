@@ -81,18 +81,6 @@ variable "user_data" {
   default     = ""
 }
 
-variable "enable_access_logs" {
-  description = "Create an S3 bucket and enable ALB access logging."
-  type        = bool
-  default     = true
-}
-
-variable "access_logs_retention_days" {
-  description = "Days to keep ALB access logs before expiry."
-  type        = number
-  default     = 90
-}
-
 variable "tags" {
   description = "Extra tags applied to all resources."
   type        = map(string)

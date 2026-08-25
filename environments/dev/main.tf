@@ -16,14 +16,11 @@ module "security" {
 }
 
 # 3. Database: DocumentDB in the private data subnets.
-# Module defaults are prod-safe; dev overrides them for cheap, fast teardown.
 module "database" {
-  source              = "../../modules/database"
-  name_prefix         = local.name_prefix
-  subnet_ids          = module.networking.data_subnet_ids
-  security_group_ids  = [module.security.data_sg_id]
-  skip_final_snapshot = true  # dev is disposable
-  deletion_protection = false # allow `terraform destroy` in dev
+  source             = "../../modules/database"
+  name_prefix        = local.name_prefix
+  subnet_ids         = module.networking.data_subnet_ids
+  security_group_ids = [module.security.data_sg_id]
 }
 
 # 4. Compute: ALB + Auto Scaling Group in the app subnets.
