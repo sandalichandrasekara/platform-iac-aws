@@ -1,4 +1,4 @@
-# Platform Infrastructure
+# AWS Platform Infrastructure
 
 Terraform Infrastructure as Code to host a **legacy monolithic web application** on AWS
 in a secure, reliable, and maintainable way.
