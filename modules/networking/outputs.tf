@@ -22,3 +22,8 @@ output "data_subnet_ids" {
   description = "Private data subnet IDs (DocumentDB)."
   value       = aws_subnet.data[*].id
 }
+
+output "flow_log_group_name" {
+  description = "CloudWatch log group receiving VPC Flow Logs."
+  value       = aws_cloudwatch_log_group.flow.name
+}

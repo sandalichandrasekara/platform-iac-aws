@@ -33,6 +33,12 @@ variable "data_subnet_cidrs" {
   default     = ["10.0.20.0/24", "10.0.21.0/24"]
 }
 
+variable "flow_log_retention_days" {
+  description = "Days to retain VPC Flow Logs in CloudWatch."
+  type        = number
+  default     = 30
+}
+
 variable "tags" {
   description = "Extra tags applied to all resources."
   type        = map(string)
