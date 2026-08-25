@@ -90,7 +90,7 @@ resource "aws_security_group" "data" {
 }
 
 # ---------------------------------------------------------------------------
-# IAM role for EC2: SSM Session Manager access (no SSH keys needed)
+# IAM role for EC2: SSM Session Manager access 
 # ---------------------------------------------------------------------------
 data "aws_iam_policy_document" "ec2_assume" {
   statement {

@@ -23,7 +23,7 @@ The goal is not to modernize the app, but to build a solid AWS platform around i
 ```
 
 **Cross-cutting:** NAT Gateway · SSM Session Manager (no SSH) · Secrets Manager ·
-CloudWatch · SNS · AWS Backup · S3 remote state.
+S3 remote state.
 
 ## Repository layout
 
@@ -34,11 +34,8 @@ platform-iac-aws/
 │   ├── networking/   # VPC, subnets, IGW, NAT, route tables
 │   ├── security/     # security groups, IAM roles
 │   ├── compute/      # ALB, launch template, Auto Scaling Group
-│   ├── database/     # Amazon DocumentDB (MongoDB-compatible)
-│   ├── monitoring/   # CloudWatch alarms/dashboards, SNS
-│   └── backup/       # AWS Backup vault + plans
-├── environments/     # per-environment composition (dev, staging, prod)
-└── docs/             # architecture notes and runbooks
+│   └── database/     # Amazon DocumentDB (MongoDB-compatible)
+└── environments/     # per-environment composition (dev)
 ```
 
 ## Requirements

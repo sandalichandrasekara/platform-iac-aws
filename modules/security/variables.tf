@@ -1,5 +1,5 @@
 variable "name_prefix" {
-  description = "Prefix for names/tags, e.g. \"platform-dev\"."
+  description = "Prefix for names/tags"
   type        = string
 }
 

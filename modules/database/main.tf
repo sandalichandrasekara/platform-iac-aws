@@ -2,12 +2,9 @@ locals {
   tags = merge(var.tags, { ManagedBy = "terraform" })
 }
 
-# ---------------------------------------------------------------------------
-# Master password -> Secrets Manager (never hard-code credentials)
-# ---------------------------------------------------------------------------
 resource "random_password" "master" {
   length  = 24
-  special = false # DocumentDB disallows several special chars; keep it simple
+  special = false 
 }
 
 resource "aws_secretsmanager_secret" "db" {
@@ -44,7 +41,7 @@ resource "aws_docdb_cluster" "this" {
   vpc_security_group_ids = var.security_group_ids
 
   storage_encrypted   = true
-  skip_final_snapshot = true # lean/dev default; set false for prod
+  skip_final_snapshot = true 
 
   tags = merge(local.tags, { Name = "${var.name_prefix}-docdb" })
 }

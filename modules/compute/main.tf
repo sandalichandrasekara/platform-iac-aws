@@ -2,8 +2,6 @@ locals {
   tags          = merge(var.tags, { ManagedBy = "terraform" })
   https_enabled = var.certificate_arn != ""
 
-  # Default bootstrap: a tiny web server on the app port so ALB health checks
-  # pass out of the box. Replace by passing var.user_data with the real app.
   default_user_data = <<-EOF
     #!/bin/bash
     dnf install -y httpd
